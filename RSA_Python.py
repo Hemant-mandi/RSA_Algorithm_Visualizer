@@ -2,6 +2,35 @@ from math import gcd, isqrt
 import random
 
 
+def karatsuba(x, y):
+    """
+    Multiply two non-negative integers using the Karatsuba algorithm.
+
+    Karatsuba reduces an n-digit multiplication to three n/2-digit
+    multiplications, giving O(n^log2(3)) ≈ O(n^1.585) time complexity
+    versus the O(n^2) of schoolbook multiplication.
+
+    For small operands the recursion overhead exceeds the savings, so
+    we fall back to native multiplication below a threshold.
+    """
+    if x < 1024 or y < 1024:
+        return x * y
+
+    n = max(x.bit_length(), y.bit_length())
+    m = n // 2
+
+    # Split: x = x1 * 2^m + x0,  y = y1 * 2^m + y0
+    mask = (1 << m) - 1
+    x1, x0 = x >> m, x & mask
+    y1, y0 = y >> m, y & mask
+
+    z2 = karatsuba(x1, y1)                          # high × high
+    z0 = karatsuba(x0, y0)                          # low  × low
+    z1 = karatsuba(x1 + x0, y1 + y0) - z2 - z0    # cross term
+
+    return (z2 << (2 * m)) + (z1 << m) + z0
+
+
 def is_prime(n):
     """Return True if n is a prime number, False otherwise."""
     if n < 2:
@@ -19,7 +48,7 @@ def is_prime(n):
 def mod_inverse(a, m):
     """Return the modular inverse of a mod m, or -1 if none exists."""
     for x in range(1, m):
-        if (a * x) % m == 1:
+        if karatsuba(a, x) % m == 1:
             return x
     return -1
 
@@ -52,7 +81,7 @@ def generate_keypair(keysize):
         q_values = [
             candidate_q for candidate_q in primes
             if candidate_q != candidate_p
-            and nMin <= candidate_p * candidate_q <= nMax
+            and nMin <= karatsuba(candidate_p, candidate_q) <= nMax
         ]
         if q_values:
             p = candidate_p
@@ -62,8 +91,8 @@ def generate_keypair(keysize):
     if p == 0:
         raise ValueError("Could not find suitable prime pair for the given key size.")
 
-    n   = p * q
-    phi = (p - 1) * (q - 1)
+    n   = karatsuba(p, q)
+    phi = karatsuba(p - 1, q - 1)
 
     # Find public exponent e: 1 < e < phi(n), gcd(e, phi(n)) = 1.
     # Derive private exponent d as the modular inverse of e mod phi(n).
