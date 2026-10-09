@@ -6,11 +6,17 @@
 const state = {
   plaintext:   '',
   cipherInts:  [],
+  cipherHex:   '',
   dKey:        null,
   nKey:        null,
   encryptData: null,
   decryptData: null,
 };
+
+/* ── Utility: convert a cipher integer to uppercase hex (e.g. 2790 → "AE6") ── */
+function toHexChar(n) {
+  return parseInt(n).toString(16).toUpperCase().padStart(3, '0');
+}
 
 /* ── DOM refs ── */
 const $ = id => document.getElementById(id);
@@ -216,7 +222,7 @@ btnEncrypt.addEventListener('click', async () => {
       <td>${i + 1}</td>
       <td class="td-char">${escapeHtml(item.char)}</td>
       <td class="td-m">${item.M}</td>
-      <td class="td-c">${item.C}</td>
+      <td class="td-c">${toHexChar(item.C)}</td>
     </tr>
   `);
   await populateTableAnimated(encryptTBody, encRows, 70);
@@ -225,8 +231,9 @@ btnEncrypt.addEventListener('click', async () => {
   await new Promise(r => setTimeout(r, 300));
   showSection(secCipherResult);
 
-  // Display cipher integers
-  const cipherStr = data.per_char.map(x => x.C).join(' ');
+  // Display cipher as hex-encoded characters (e.g. "A4F 3B2 1C9 …")
+  const cipherStr = data.per_char.map(x => toHexChar(x.C)).join(' ');
+  state.cipherHex = cipherStr;                  // save for comparison table
   await typewriterEffect(cipherDisplay, cipherStr, 12);
 
   setButtonLoading(btnEncrypt, false);
@@ -289,7 +296,6 @@ btnDecrypt.addEventListener('click', async () => {
     <tr>
       <td>${i + 1}</td>
       <td class="td-c">${item.C}</td>
-      <td class="td-m">${item.M}</td>
       <td class="td-char">${escapeHtml(item.char)}</td>
     </tr>
   `);
@@ -304,11 +310,10 @@ btnDecrypt.addEventListener('click', async () => {
   await new Promise(r => setTimeout(r, 400));
   showSection(secComparison);
 
-  const cipherStr = state.cipherInts.join(' ');
   compBody.innerHTML = `
     <tr class="row-visible">
       <td>${escapeHtml(state.plaintext)}</td>
-      <td>${escapeHtml(cipherStr)}</td>
+      <td>${escapeHtml(state.cipherHex || '')}</td>
       <td>${escapeHtml(data.decrypted_text)}</td>
     </tr>
   `;
@@ -320,7 +325,7 @@ btnDecrypt.addEventListener('click', async () => {
 /* ── RESET ── */
 btnReset.addEventListener('click', () => {
   // Clear state
-  Object.assign(state, { plaintext: '', cipherInts: [], dKey: null, nKey: null,
+  Object.assign(state, { plaintext: '', cipherInts: [], cipherHex: '', dKey: null, nKey: null,
     encryptData: null, decryptData: null });
 
   // Clear input
