@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}RSA Demo — RSA Visualizer{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title glitch" data-text="RSA DEMO">RSA DEMO</h1>
+  <p class="page-subtitle">Watch the RSA algorithm encrypt &amp; decrypt your message — step by step</p>
+</div>
+
+<section class="card input-card" id="section-input">
+  <div class="card-header">
+    <span class="card-icon">📝</span>
+    <h2>Enter Plain Text</h2>
+  </div>
+  <div class="input-group">
+    <textarea
+      id="plaintext-input"
+      class="cyber-input"
+      placeholder="Type your secret message here…"
+      rows="3"
+      maxlength="200"
+      aria-label="Plain text input"
+    ></textarea>
+    <div class="char-counter"><span id="char-count">0</span> / 200</div>
+  </div>
+  <div id="input-error" class="error-msg hidden" role="alert"></div>
+  <button id="btn-encrypt" class="cyber-btn btn-primary" aria-label="Encrypt message">
+    <span class="btn-text">🔒 ENCRYPT</span>
+    <span class="btn-loader hidden">⏳ Encrypting…</span>
+  </button>
+</section>
+
+<section class="card process-card hidden" id="section-encrypt-process">
+  <div class="card-header">
+    <span class="card-icon">⚙️</span>
+    <h2>Encryption Process</h2>
+    <span class="badge badge-encrypt">ENCRYPTING</span>
+  </div>
+
+  <div class="params-grid" id="encrypt-params">
+    <div class="param-item" data-key="p">
+      <div class="param-label">p <span class="param-hint">(prime 1)</span></div>
+      <div class="param-value" id="ep-p">—</div>
+    </div>
+    <div class="param-item" data-key="q">
+      <div class="param-label">q <span class="param-hint">(prime 2)</span></div>
+      <div class="param-value" id="ep-q">—</div>
+    </div>
+    <div class="param-item" data-key="n">
+      <div class="param-label">n <span class="param-hint">= p × q</span></div>
+      <div class="param-value" id="ep-n">—</div>
+    </div>
+    <div class="param-item" data-key="phi">
+      <div class="param-label">φ(n) <span class="param-hint">= (p−1)(q−1)</span></div>
+      <div class="param-value" id="ep-phi">—</div>
+    </div>
+    <div class="param-item" data-key="e">
+      <div class="param-label">e <span class="param-hint">(public exp)</span></div>
+      <div class="param-value" id="ep-e">—</div>
+    </div>
+    <div class="param-item" data-key="d">
+      <div class="param-label">d <span class="param-hint">(private exp)</span></div>
+      <div class="param-value" id="ep-d">—</div>
+    </div>
+  </div>
+
+  <div class="formula-banner">
+    <span class="formula-label">Encryption Formula:</span>
+    <span class="formula-math">$C \equiv M^e \pmod{n}$</span>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="cyber-table" id="encrypt-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Char</th>
+          <th>M (ASCII)</th>
+          <th>C = M<sup>e</sup> mod n</th>
+        </tr>
+      </thead>
+      <tbody id="encrypt-table-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card result-card hidden" id="section-cipher-result">
+  <div class="card-header">
+    <span class="card-icon">🔐</span>
+    <h2>Encrypted Ciphertext</h2>
+  </div>
+  <div class="result-box" id="cipher-display" aria-label="Ciphertext output"></div>
+  <button id="btn-decrypt" class="cyber-btn btn-secondary" aria-label="Decrypt ciphertext">
+    <span class="btn-text">🔓 DECRYPT</span>
+    <span class="btn-loader hidden">⏳ Decrypting…</span>
+  </button>
+</section>
+
+<section class="card process-card hidden" id="section-decrypt-process">
+  <div class="card-header">
+    <span class="card-icon">⚙️</span>
+    <h2>Decryption Process</h2>
+    <span class="badge badge-decrypt">DECRYPTING</span>
+  </div>
+
+  <div class="params-grid" id="decrypt-params">
+    <div class="param-item" data-key="d">
+      <div class="param-label">d <span class="param-hint">(private key)</span></div>
+      <div class="param-value" id="dp-d">—</div>
+    </div>
+    <div class="param-item" data-key="n">
+      <div class="param-label">n <span class="param-hint">(modulus)</span></div>
+      <div class="param-value" id="dp-n">—</div>
+    </div>
+  </div>
+
+  <div class="formula-banner">
+    <span class="formula-label">Decryption Formula:</span>
+    <span class="formula-math">$M \equiv C^d \pmod{n}$</span>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="cyber-table" id="decrypt-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>C (cipher)</th>
+          <th>M = C<sup>d</sup> mod n</th>
+          <th>Char</th>
+        </tr>
+      </thead>
+      <tbody id="decrypt-table-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card result-card success-card hidden" id="section-decrypted-result">
+  <div class="card-header">
+    <span class="card-icon">✅</span>
+    <h2>Decrypted Plain Text</h2>
+  </div>
+  <div class="result-box result-success" id="decrypted-display" aria-label="Decrypted text output"></div>
+</section>
+
+<section class="card comparison-card hidden" id="section-comparison">
+  <div class="card-header">
+    <span class="card-icon">📊</span>
+    <h2>Comparison Summary</h2>
+  </div>
+  <div class="table-wrapper">
+    <table class="cyber-table comparison-table" id="comparison-table">
+      <thead>
+        <tr>
+          <th>Plain Text</th>
+          <th>Cipher Text (integers)</th>
+          <th>Decrypted Message</th>
+        </tr>
+      </thead>
+      <tbody id="comparison-body"></tbody>
+    </table>
+  </div>
+
+  <button id="btn-reset" class="cyber-btn btn-reset" aria-label="Reset and try again">
+    🔄 TRY ANOTHER MESSAGE
+  </button>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/demo.js') }}"></script>
+{% endblock %}

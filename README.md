@@ -2,9 +2,6 @@
 
 A Python implementation of the RSA public-key cryptosystem, demonstrating key generation, encryption, and decryption from scratch using only the standard library.
 
-Created in collaboration with [Unnikrishnan Menon](https://github.com/7enTropy7).
-
----
 
 ## Algorithm Overview
 

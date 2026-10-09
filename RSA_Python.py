@@ -3,36 +3,24 @@ import random
 
 
 def karatsuba(x, y):
-    """
-    Multiply two non-negative integers using the Karatsuba algorithm.
-
-    Karatsuba reduces an n-digit multiplication to three n/2-digit
-    multiplications, giving O(n^log2(3)) ≈ O(n^1.585) time complexity
-    versus the O(n^2) of schoolbook multiplication.
-
-    For small operands the recursion overhead exceeds the savings, so
-    we fall back to native multiplication below a threshold.
-    """
     if x < 1024 or y < 1024:
         return x * y
 
     n = max(x.bit_length(), y.bit_length())
     m = n // 2
 
-    # Split: x = x1 * 2^m + x0,  y = y1 * 2^m + y0
     mask = (1 << m) - 1
     x1, x0 = x >> m, x & mask
     y1, y0 = y >> m, y & mask
 
-    z2 = karatsuba(x1, y1)                          # high × high
-    z0 = karatsuba(x0, y0)                          # low  × low
-    z1 = karatsuba(x1 + x0, y1 + y0) - z2 - z0    # cross term
+    z2 = karatsuba(x1, y1)
+    z0 = karatsuba(x0, y0)
+    z1 = karatsuba(x1 + x0, y1 + y0) - z2 - z0
 
     return (z2 << (2 * m)) + (z1 << m) + z0
 
 
 def is_prime(n):
-    """Return True if n is a prime number, False otherwise."""
     if n < 2:
         return False
     if n == 2:
@@ -46,7 +34,6 @@ def is_prime(n):
 
 
 def mod_inverse(a, m):
-    """Return the modular inverse of a mod m, or -1 if none exists."""
     for x in range(1, m):
         if karatsuba(a, x) % m == 1:
             return x
@@ -54,26 +41,17 @@ def mod_inverse(a, m):
 
 
 def generate_keypair(keysize):
-    """
-    Generate an RSA public/private key pair for a key of the given bit length.
-
-    Returns:
-        ((e, n), (d, n)) — public key and private key as tuples.
-    """
     nMin = 1 << (keysize - 1)
     nMax = (1 << keysize) - 1
 
-    # Select p and q from a range that keeps their bit lengths similar,
-    # making n harder to factor.
     start = 1 << (keysize // 2 - 1)
-    stop  = 1 << (keysize // 2 + 1)
+    stop = 1 << (keysize // 2 + 1)
 
     if start >= stop:
         raise ValueError("Key size too small to generate distinct primes.")
 
     primes = [n for n in range(start, stop + 1) if is_prime(n)]
 
-    # Find a valid (p, q) pair whose product falls within [nMin, nMax].
     p = q = 0
     candidates = list(primes)
     random.shuffle(candidates)
@@ -91,11 +69,9 @@ def generate_keypair(keysize):
     if p == 0:
         raise ValueError("Could not find suitable prime pair for the given key size.")
 
-    n   = karatsuba(p, q)
+    n = karatsuba(p, q)
     phi = karatsuba(p - 1, q - 1)
 
-    # Find public exponent e: 1 < e < phi(n), gcd(e, phi(n)) = 1.
-    # Derive private exponent d as the modular inverse of e mod phi(n).
     while True:
         e = random.randrange(2, phi)
         if gcd(e, phi) == 1:
@@ -103,25 +79,19 @@ def generate_keypair(keysize):
             if d != -1 and e != d:
                 break
 
-    # Public key: (e, n)  |  Private key: (d, n)
     return (e, n), (d, n)
 
 
 def encrypt(plaintext, public_key):
-    """Encrypt a plaintext string using the given public key."""
     e, n = public_key
     return [pow(ord(c), e, n) for c in plaintext]
 
 
 def decrypt(ciphertext, private_key):
-    """Decrypt a list of ciphertext integers using the given private key."""
     d, n = private_key
     return ''.join(chr(pow(c, d, n)) for c in ciphertext)
 
 
-# -----------------------------------------------------------------------------
-# Driver
-# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     bit_length = int(input("Enter bit length: "))
     keysize = 2 ** bit_length

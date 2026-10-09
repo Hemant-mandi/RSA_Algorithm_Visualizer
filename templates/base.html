@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}RSA Visualizer{% endblock %}</title>
+  <meta name="description" content="Interactive RSA Algorithm Visualization — encrypt and decrypt messages step by step." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <canvas id="bg-canvas"></canvas>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="{{ url_for('static', filename='ravi_kishan.jpg') }}" alt="money follows my brotha" width="60" height="60">
+      <span class="lock-icon">🔐</span>
+      <span class="brand-text">Team<span class="brand-accent"> Desi Pacino</span></span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('demo') }}" class="nav-link {% if request.endpoint == 'demo' %}active{% endif %}" id="nav-demo">RSA Demo</a></li>
+      <li><a href="{{ url_for('formula') }}" class="nav-link {% if request.endpoint == 'formula' %}active{% endif %}" id="nav-formula">Formula</a></li>
+    </ul>
+    <div class="nav-status">
+      <span class="status-dot"></span>
+      <span class="status-text">SECURE</span>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>Prepared By &mdash; Hemant, Mandar,  Chirag, Almas &nbsp;|&nbsp; <span class="footer-accent"> A CNS Project</span> |  &nbsp; Since 1st Sem(2023)</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/bg.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
